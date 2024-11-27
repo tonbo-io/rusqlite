@@ -12,8 +12,8 @@ pub struct Sql {
 }
 
 impl Sql {
-    pub fn new() -> Sql {
-        Sql { buf: String::new() }
+    pub fn new() -> Self {
+        Self { buf: String::new() }
     }
 
     pub fn push_pragma(
@@ -47,6 +47,7 @@ impl Sql {
             DatabaseName::Main => self.buf.push_str("main"),
             DatabaseName::Temp => self.buf.push_str("temp"),
             DatabaseName::Attached(s) => self.push_identifier(s),
+            DatabaseName::C(s) => self.push_identifier(s.to_str().expect("invalid database name")),
         };
     }
 

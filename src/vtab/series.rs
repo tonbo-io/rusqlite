@@ -3,7 +3,6 @@
 //! Port of C [generate series
 //! "function"](http://www.sqlite.org/cgi/src/finfo?name=ext/misc/series.c):
 //! `https://www.sqlite.org/series.html`
-use std::default::Default;
 use std::marker::PhantomData;
 use std::os::raw::c_int;
 
@@ -15,7 +14,7 @@ use crate::vtab::{
 };
 use crate::{Connection, Error, Result};
 
-/// Register the "generate_series" module.
+/// Register the `generate_series` module.
 pub fn load_module(conn: &Connection) -> Result<()> {
     let aux: Option<()> = None;
     conn.create_module("generate_series", eponymous_only_module::<SeriesTab>(), aux)
@@ -30,7 +29,7 @@ const SERIES_COLUMN_STEP: c_int = 3;
 bitflags::bitflags! {
     #[derive(Clone, Copy)]
     #[repr(C)]
-    struct QueryPlanFlags: ::std::os::raw::c_int {
+    struct QueryPlanFlags: c_int {
         // start = $value  -- constraint exists
         const START = 1;
         // stop = $value   -- constraint exists
@@ -61,8 +60,8 @@ unsafe impl<'vtab> VTab<'vtab> for SeriesTab {
         db: &mut VTabConnection,
         _aux: Option<&()>,
         _args: &[&[u8]],
-    ) -> Result<(String, SeriesTab)> {
-        let vtab = SeriesTab {
+    ) -> Result<(String, Self)> {
+        let vtab = Self {
             base: ffi::sqlite3_vtab::default(),
         };
         db.config(VTabConfig::Innocuous)?;
@@ -116,7 +115,7 @@ unsafe impl<'vtab> VTab<'vtab> for SeriesTab {
         }
         if idx_num.contains(QueryPlanFlags::BOTH) {
             // Both start= and stop= boundaries are available.
-            #[allow(clippy::bool_to_int_with_if)]
+            #[expect(clippy::bool_to_int_with_if)]
             info.set_estimated_cost(f64::from(
                 2 - if idx_num.contains(QueryPlanFlags::STEP) {
                     1
@@ -194,7 +193,7 @@ impl SeriesTabCursor<'_> {
         }
     }
 }
-#[allow(clippy::comparison_chain)]
+#[expect(clippy::comparison_chain)]
 unsafe impl VTabCursor for SeriesTabCursor<'_> {
     fn filter(&mut self, idx_num: c_int, _idx_str: Option<&str>, args: &Values<'_>) -> Result<()> {
         let mut idx_num = QueryPlanFlags::from_bits_truncate(idx_num);

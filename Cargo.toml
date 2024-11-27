@@ -1,24 +1,24 @@
 [package]
 name = "rusqlite"
 # Note: Update version in README.md when you change this.
-version = "0.31.0"
 authors = ["The rusqlite developers"]
-edition = "2021"
-description = "Ergonomic wrapper for SQLite"
-repository = "https://github.com/rusqlite/rusqlite"
-documentation = "https://docs.rs/rusqlite/"
-readme = "README.md"
-keywords = ["sqlite", "database", "ffi"]
-license = "MIT"
 categories = ["database"]
+description = "Ergonomic wrapper for SQLite"
+documentation = "https://docs.rs/rusqlite/"
+edition = "2021"
+keywords = ["database", "ffi", "sqlite"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/rusqlite/rusqlite"
+version = "0.32.1"
 
 exclude = [
-  "/.github/*",
-  "/.gitattributes",
-  "/appveyor.yml",
-  "/Changelog.md",
-  "/clippy.toml",
-  "/codecov.yml",
+    "/.gitattributes",
+    "/.github/*",
+    "/Changelog.md",
+    "/appveyor.yml",
+    "/clippy.toml",
+    "/codecov.yml",
 ]
 
 [badges]
@@ -44,24 +44,28 @@ functions = []
 # sqlite3_log: 3.6.23 (2010-03-09)
 trace = []
 # sqlite3_db_release_memory: 3.7.10 (2012-01-16)
-release_memory = []
-bundled = ["libsqlite3-sys/bundled", "modern_sqlite"]
-bundled-sqlcipher = ["libsqlite3-sys/bundled-sqlcipher", "bundled"]
-bundled-sqlcipher-vendored-openssl = ["libsqlite3-sys/bundled-sqlcipher-vendored-openssl", "bundled-sqlcipher"]
 buildtime_bindgen = ["libsqlite3-sys/buildtime_bindgen"]
-limits = []
-loadable_extension = ["libsqlite3-sys/loadable_extension"]
+bundled = ["libsqlite3-sys/bundled", "modern_sqlite"]
+bundled-sqlcipher = ["bundled", "libsqlite3-sys/bundled-sqlcipher"]
+bundled-sqlcipher-vendored-openssl = [
+    "bundled-sqlcipher",
+    "libsqlite3-sys/bundled-sqlcipher-vendored-openssl",
+]
 hooks = []
 i128_blob = []
+limits = []
+loadable_extension = ["libsqlite3-sys/loadable_extension"]
+preupdate_hook = ["hooks", "libsqlite3-sys/preupdate_hook"]
+release_memory = []
 sqlcipher = ["libsqlite3-sys/sqlcipher"]
 unlock_notify = ["libsqlite3-sys/unlock_notify"]
 # xSavepoint, xRelease and xRollbackTo: 3.7.7 (2011-06-23)
-vtab = []
 csvtab = ["csv", "vtab"]
+vtab = []
 # pointer passing interfaces: 3.20.0
 array = ["vtab"]
 # session extension: 3.13.0
-session = ["libsqlite3-sys/session", "hooks"]
+session = ["hooks", "libsqlite3-sys/session"]
 # window functions: 3.25.0
 window = ["functions"]
 # 3.9.0
@@ -69,13 +73,13 @@ series = ["vtab"]
 # check for invalid query.
 extra_check = []
 # ]3.14.0, last]
-modern_sqlite = ["libsqlite3-sys/bundled_bindings"]
-in_gecko = ["modern_sqlite", "libsqlite3-sys/in_gecko"]
 bundled-windows = ["libsqlite3-sys/bundled-windows"]
+in_gecko = ["libsqlite3-sys/in_gecko", "modern_sqlite"]
+modern_sqlite = ["libsqlite3-sys/bundled_bindings"]
 # Build bundled sqlite with -fsanitize=address
-with-asan = ["libsqlite3-sys/with-asan"]
 column_decltype = []
 wasm32-wasi-vfs = ["libsqlite3-sys/wasm32-wasi-vfs"]
+with-asan = ["libsqlite3-sys/with-asan"]
 # 3.23.0
 serialize = ["modern_sqlite"]
 
@@ -87,7 +91,6 @@ modern-full = [
     "array",
     "backup",
     "blob",
-    "modern_sqlite",
     "chrono",
     "collation",
     "column_decltype",
@@ -96,9 +99,12 @@ modern-full = [
     "functions",
     "hooks",
     "i128_blob",
+    "jiff",
     "limits",
     "load_extension",
+    "modern_sqlite",
     "serde_json",
+    "serialize",
     "series",
     "time",
     "trace",
@@ -109,41 +115,52 @@ modern-full = [
     "window",
 ]
 
-bundled-full = ["modern-full", "bundled"]
+bundled-full = ["bundled", "modern-full"]
 
 [dependencies]
-time = { version = "0.3.0", features = ["formatting", "macros", "parsing"], optional = true }
-bitflags = "2.0"
-hashlink = "0.9"
-chrono = { version = "0.4", optional = true, default-features = false, features = ["clock"] }
-serde_json = { version = "1.0", optional = true }
+bitflags = "2.6.0"
+chrono = { version = "0.4.38", optional = true, default-features = false, features = [
+    "clock",
+] }
 csv = { version = "1.1", optional = true }
-url = { version = "2.1", optional = true }
 fallible-iterator = "0.3"
 fallible-streaming-iterator = "0.1"
-uuid = { version = "1.0", optional = true }
+hashlink = "0.9"
+jiff = { version = "0.1", optional = true, default-features = false, features = [
+    "std",
+] }
+rusqlite-macros = { path = "rusqlite-macros", version = "0.3.0", optional = true }
+serde_json = { version = "1.0", optional = true }
 smallvec = "1.6.1"
-rusqlite-macros = { path = "rusqlite-macros", version = "0.2.0", optional = true }
+time = { version = "0.3.36", features = [
+    "formatting",
+    "macros",
+    "parsing",
+], optional = true }
+url = { version = "2.1", optional = true }
+uuid = { version = "1.0", optional = true }
 
 [dev-dependencies]
 doc-comment = "0.3"
-tempfile = "3.1.0"
-lazy_static = "1.4"
 regex = "1.5.5"
-uuid = { version = "1.0", features = ["v4"] }
+tempfile = "3.1.0"
 unicase = "2.6.0"
+uuid = { version = "1.0", features = ["v4"] }
 wasm-bindgen-test = "0.3"
-# Use `bencher` over criterion because it builds much faster and we don't have
-# many benchmarks
+# Use `bencher` over criterion because it builds much faster,
+# and we don't have many benchmarks
 bencher = "0.1"
 
 [dependencies.libsqlite3-sys]
 path = "libsqlite3-sys"
-version = "0.28.0"
+version = "0.30.1"
 
 [[test]]
-name = "config_log"
+name = "auto_ext"
+
+[[test]]
 harness = false
+name = "config_log"
 
 [[test]]
 name = "deny_single_threaded_sqlite_config"
@@ -152,29 +169,29 @@ name = "deny_single_threaded_sqlite_config"
 name = "vtab"
 
 [[bench]]
-name = "cache"
 harness = false
+name = "cache"
 
 [[bench]]
-name = "exec"
 harness = false
+name = "exec"
 
 [[example]]
-name = "loadable_extension"
 crate-type = ["cdylib"]
-required-features = ["loadable_extension", "functions", "trace"]
+name = "loadable_extension"
+required-features = ["functions", "loadable_extension", "trace"]
 
 [[example]]
 name = "load_extension"
-required-features = ["load_extension", "bundled", "functions", "trace"]
+required-features = ["bundled", "functions", "load_extension", "trace"]
 
 [package.metadata.docs.rs]
-features = ["modern-full", "rusqlite-macros"]
 all-features = false
-no-default-features = true
 default-target = "x86_64-unknown-linux-gnu"
+features = ["modern-full", "rusqlite-macros"]
+no-default-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.playground]
-features = ["bundled-full"]
 all-features = false
+features = ["bundled-full"]
