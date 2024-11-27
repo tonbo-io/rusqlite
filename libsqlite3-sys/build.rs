@@ -304,7 +304,6 @@ mod build_bundled {
                 std::env::var_os("DEP_WASM32_UNKNOWN_UNKNOWN_OPENBSD_LIBC_INCLUDE").unwrap(),
             );
 
-            println!("cargo:rustc-link-lib=compiler-rt-builtins");
             println!("cargo:rustc-link-lib=wasm32-unknown-unknown-openbsd-libc");
         }
         if cfg!(feature = "unlock_notify") {
