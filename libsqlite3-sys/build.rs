@@ -296,7 +296,7 @@ mod build_bundled {
                 .split(',')
             {
                 if supported_features.contains(&feature) {
-                    cfg.flag(&format!("-m{feature}"));
+                    cfg.flag(format!("-m{feature}"));
                 }
             }
 
