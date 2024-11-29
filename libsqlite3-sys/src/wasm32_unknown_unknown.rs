@@ -35,14 +35,8 @@ pub unsafe extern "C" fn sqlite3_os_init() -> c_int {
     sqlite3_vfs_register(Box::leak(Box::new(vfs)), 1)
 }
 
-const fn max(a: usize, b: usize) -> usize {
-    [a, b][(a < b) as usize]
-}
-
-const ALIGN: usize = max(
-    8, // wasm32 max_align_t
-    max(std::mem::size_of::<usize>(), std::mem::align_of::<usize>()),
-);
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+const ALIGN: usize = 8;
 
 #[no_mangle]
 pub unsafe extern "C" fn malloc(size: usize) -> *mut u8 {
