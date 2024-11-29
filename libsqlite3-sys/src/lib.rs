@@ -1,5 +1,8 @@
 #![expect(non_snake_case, non_camel_case_types)]
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+mod wasm32_unknown_unknown;
+
 // force linking to openssl
 #[cfg(feature = "bundled-sqlcipher-vendored-openssl")]
 extern crate openssl_sys;
