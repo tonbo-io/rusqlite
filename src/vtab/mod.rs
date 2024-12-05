@@ -106,7 +106,7 @@ macro_rules! module {
     &Module {
         base: ffi::sqlite3_module {
             // We don't use V3
-            iVersion: 2,
+            iVersion: 4,
             xCreate: $xc,
             xConnect: Some(rust_connect::<$vt>),
             xBestIndex: Some(rust_best_index::<$vt>),
@@ -129,6 +129,8 @@ macro_rules! module {
             xSavepoint: None,
             xRelease: None,
             xRollbackTo: None,
+            xShadowName: None,
+            xIntegrity: Some(rust_integrity::<$vt>),
             ..ZERO_MODULE
         },
         phantom: PhantomData::<&$lt $vt>,
@@ -266,6 +268,12 @@ pub unsafe trait VTab<'vtab>: Sized {
     /// Create a new cursor used for accessing a virtual table.
     /// (See [SQLite doc](https://sqlite.org/vtab.html#the_xopen_method))
     fn open(&'vtab mut self) -> Result<Self::Cursor>;
+
+    /// Do a low-level formatting and consistency check of the database.
+    /// (See [SQLite doc](https://www.sqlite.org/vtab.html#the_xintegrity_method))
+    fn integrity(&'vtab mut self, _flag: usize) -> Result<()> {
+        Ok(())
+    }
 }
 
 /// Read-only virtual table instance trait.
@@ -1052,6 +1060,28 @@ where
     }
     let vtab = vtab.cast::<T>();
     drop(Box::from_raw(vtab));
+    ffi::SQLITE_OK
+}
+
+unsafe extern "C" fn rust_integrity<'vtab, T>(
+    vtab: *mut sqlite3_vtab,
+    _schema: *const c_char,
+    _tab_name: *const c_char,
+    m_flags: c_int,
+    err_msg: *mut *mut c_char,
+) -> c_int
+where
+    T: VTab<'vtab> + 'vtab,
+{
+    if vtab.is_null() {
+        return ffi::SQLITE_OK;
+    }
+    let vtab = vtab.cast::<T>();
+
+    if let Err(err) = (*vtab).integrity(m_flags as usize) {
+        // The xIntegrity method should normally return SQLITE_OK, even if it finds problems in the content of the virtual table.
+        *err_msg = alloc(&err.to_string());
+    }
     ffi::SQLITE_OK
 }
 
