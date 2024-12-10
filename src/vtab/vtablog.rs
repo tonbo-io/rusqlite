@@ -128,6 +128,11 @@ unsafe impl<'vtab> VTab<'vtab> for VTabLog {
             phantom: PhantomData,
         })
     }
+
+    fn integrity(&'vtab mut self, flag: usize) -> Result<()> {
+        println!("VTabLog::integrity({})", flag);
+        Ok(())
+    }
 }
 
 impl CreateVTab<'_> for VTabLog {
@@ -291,6 +296,12 @@ mod test {
             "UPDATE log SET b = ?1, c = ?2 WHERE a = ?3",
             ["bn", "cn", "a1"],
         )?;
+        db.pragma(None, "quick_check", "log", |r| -> Result<()> {
+            println!("{:#?}", r);
+            Ok(())
+        })
+        .unwrap();
+
         Ok(())
     }
 }
