@@ -93,6 +93,7 @@ pub use crate::version::*;
 #[doc(hidden)]
 pub use rusqlite_macros::__bind;
 
+#[macro_use]
 mod error;
 
 #[cfg(not(feature = "loadable_extension"))]
@@ -321,10 +322,7 @@ fn str_for_sqlite(s: &[u8]) -> Result<(*const c_char, c_int, ffi::sqlite3_destru
 // failed.
 fn len_as_c_int(len: usize) -> Result<c_int> {
     if len >= (c_int::MAX as usize) {
-        Err(Error::SqliteFailure(
-            ffi::Error::new(ffi::SQLITE_TOOBIG),
-            None,
-        ))
+        Err(err!(ffi::SQLITE_TOOBIG))
     } else {
         Ok(len as c_int)
     }
@@ -652,7 +650,6 @@ impl Connection {
     ///
     /// This calls [`sqlite3_db_release_memory`](https://www.sqlite.org/c3ref/db_release_memory.html).
     #[inline]
-    #[cfg(feature = "release_memory")]
     pub fn release_memory(&self) -> Result<()> {
         self.db.borrow_mut().release_memory()
     }
@@ -2287,5 +2284,11 @@ mod test {
         db.get_interrupt_handle().interrupt();
         assert!(db.is_interrupted());
         Ok(())
+    }
+
+    #[test]
+    fn release_memory() -> Result<()> {
+        let db = Connection::open_in_memory()?;
+        db.release_memory()
     }
 }
